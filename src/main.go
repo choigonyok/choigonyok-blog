@@ -22,12 +22,16 @@ func main() {
 	eg.GET("/index.html", func(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, "/")
 	})
-	// eg.GET("/index.html", func(c *gin.Context) {
-	// 	c.Redirect(http.StatusSeeOther, "/")
-	// })
-	// eg.GET("/index.html", func(c *gin.Context) {
-	// 	c.Redirect(http.StatusSeeOther, "/")
-	// })
+
+	// generic page
+	eg.GET("/generic.html", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "generic.html", nil)
+	})
+
+	// elements page
+	eg.GET("/elements.html", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "elements.html", nil)
+	})
 
 	eg.Run(":8080")
 }

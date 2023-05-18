@@ -88,7 +88,8 @@
 
 
 
-
+<br>
+<br>
 
 
 
@@ -103,9 +104,9 @@
 
 서버와의 접속 연결
 
-HTML사이드바 이름 변경
+HTML - 사이드바 이름 변경
 
-홈페이지 핸들러 구현
+기본 html template template(?) 핸들러 구현
 홈페이지로 돌아오도록 리다이렉트 일부 구현
 
 Gin engine 생성 후 template 전부 파싱, static resource 설정
