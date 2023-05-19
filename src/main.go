@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
-	_ "net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +31,14 @@ func main() {
 	// elements page
 	eg.GET("/elements.html", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "elements.html", nil)
+	})
+
+	eg.POST("/receive", func(c *gin.Context) {
+		fmt.Println(c.PostForm("writein"))
+
+		c.Redirect(http.StatusSeeOther, "/generic.html")
+
+		// body.Close()
 	})
 
 	eg.Run(":8080")
