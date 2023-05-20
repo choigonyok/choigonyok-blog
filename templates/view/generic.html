@@ -10,6 +10,8 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
+		
+		
 	</head>
 	<body class="is-preload">
 
@@ -36,19 +38,24 @@
 									</header>
 
 									<hr class="major" />
-
-									{{range .}}
-									<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
+										{{range $index, $value := .}}
+										<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
+										<a href="/lookpage?index={{$index}}&cate={{.Category}}"><h2><strong>{{.Title}}</strong></h2></a>
+										  <br/>
+										  
+										  <h4>{{.Body}}</h4>
+										  <br/>
+										  <br/>
+										  작성일시 : {{.Written_Time}}
+										  
+										  <hr class="major" />
+										
+										
+										  {{end}}
+										
+								
 									
-									<a href="project1.html" class="logo" style="font-size : 34px;"><strong>{{.Title}}</strong></a>
-									<p>
-										{{.Body}}
-									</p>
-									{{.Written_Time}}
-
-
-									<hr class="major" />
-									{{end}}
+									
 							
 								</section>
 						</div>

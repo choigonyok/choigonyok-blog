@@ -30,26 +30,32 @@
 								</header>
 
 							<!-- Content -->
-								<section>
-									<header class="main">
-										<h1>Study</h1>
-									</header>
+							<section>
+								<header class="main">
+									<h1>Projects</h1>
+								</header>
 
-									<hr class="major" />
-									{{range .}}
-									<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
-
-									<a href="index.html" class="logo" style="font-size : 34px;"><strong>{{.Title}}</strong></a>
+								<hr class="major" />
+								{{range $index, $value := .}}
+								<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
+								<a href="/lookpage?index={{$index}}&cate={{.Category}}"><h2><strong>{{.Title}}</strong></h2></a>
+								  <br/>
+								  
+								  <h4>{{.Body}}</h4>
+								  <br/>
+								  <br/>
+								  작성일시 : {{.Written_Time}}
+								  
+								  <hr class="major" />
+								
+								
+								  {{end}}
 									
-									<p>
-										{{.Body}}
-									</p>
-									{{.Written_Time}}
-
-
-									<hr class="major" />
-									{{end}}
-								</section>
+							
+								
+								
+						
+							</section>
 						</div>
 					</div>
 
