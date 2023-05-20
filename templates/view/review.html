@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Projects - about Projects</title>
+		<title>Reviews - personal Reviews</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
@@ -22,7 +22,7 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">write <strong>Post</strong></a>
+									<a href="index.html" class="logo">personal <strong>Review</strong></a>
 									<ul class="icons">
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
@@ -32,39 +32,23 @@
 							<!-- Content -->
 								<section>
 									<header class="main">
-										<h1>Posting</h1>
+										<h1>Review</h1>
 									</header>
-									<hr class="major"/>
-									
-										
-									<form action="/markdown" method="post">
-										<div class="col-12">
-											<select name="Cate" id="Cate">
-												<option value="">- Board list -</option>
-												<option value="projects" >Projects</option>
-												<option value="study" >Study</option>
-												<option value="review"> Review</option>
-											</select>
-										</div>
-										</br>
-										<div class="col-6 col-12-xsmall">
-											<input type="text" name="Title" id="Title" value="" placeholder="Title" />
-										</div>
-										</br>
-										<p><textarea name="Text" id="Text" placeholder= "Write Body..." cols="50" rows="20" value=""></textarea>
-										</p>
-									   		<div class="major">
-												<ul class="actions">
-													<li><input type="submit" id="submit" value="Upload" class="primary" />
-													</li>	
-													<li><input type="reset" id="reset" value="Cancle" />
-													</li>
-												</ul>
-											</div>
-									</form>
-								
-									
 
+									<hr class="major" />
+									{{range .}}
+									<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
+
+									<a href="index.html" class="logo" style="font-size : 34px;"><strong>{{.Title}}</strong></a>
+									
+									<p>
+										{{.Body}}
+									</p>
+									{{.Written_Time}}
+
+
+									<hr class="major" />
+									{{end}}
 								</section>
 						</div>
 					</div>
