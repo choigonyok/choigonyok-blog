@@ -38,21 +38,19 @@
 									
 										
 									<form action="/write" method="post">
-										<div class="col-12">
-											<select name="Cate" id="Cate">
-												<option value="">- Board list -</option>
-												<option value="projects" >Projects</option>
-												<option value="study" >Study</option>
-												<option value="review"> Review</option>
-											</select>
-										</div>
 										</br>
+										<div class="col-6 col-6-xsmall">
+											<input type="hidden" name="Cate" id="Cate" value="{{.Category}}" />
+											<input type="hidden" name="Id" id="Id" value="{{.Id}}" />
+											<h2>Title</h2>
+											<p><textarea name="Title" id="Title" placeholder= "Write Title..." cols="20" rows="1" value="">{{.Title}}</textarea>
+										</div>
 										<div class="col-6 col-12-xsmall">
-											<input type="text" name="Title" id="Title" value="" placeholder="Title" />
-											<input type="hidden" name="Id" id="Id" value="" />
+
 										</div>
 										</br>
-										<p><textarea name="Text" id="Text" placeholder= "Write Body..." cols="50" rows="20" value=""></textarea>
+										<h2>Text</h2>
+										<p><textarea name="Text" id="Text" placeholder= "Write Body..." cols="50" rows="20" value="">{{.Body}}</textarea>
 										</p>
 									   		<div class="major">
 												<ul class="actions">

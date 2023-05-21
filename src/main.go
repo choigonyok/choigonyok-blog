@@ -62,6 +62,10 @@ func main() {
 		c.HTML(http.StatusOK, "project1.html", nil)
 	})
 
+	eg.GET("/elements", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "elements.html", nil)
+	})
+
 	// DB에서 데이터 가져와서 게시판 보여주기
 	eg.GET("/postlist", func(c *gin.Context) {
 		listname := c.Query("listname")
@@ -84,29 +88,45 @@ func main() {
 
 	//write하면 DB에 저장
 	eg.POST("/write", func(c *gin.Context) {
+		already := c.Request.FormValue("Id")
+		fmt.Println(already)
+		fmt.Println(already)
+		fmt.Println(already)
+		fmt.Println(already)
+		fmt.Println(already)
 		cate := c.Request.FormValue("Cate")
 		title := c.Request.FormValue("Title")
 		body := c.Request.FormValue("Text")
 		if cate == "" || title == "" || body == "" {
 			http.Error(c.Writer, "THERE IS EMPTY BOX", http.StatusBadRequest)
 		}
-		// 카테고리에 맞는 다음 id는 몇 번인지 확인
-		query := "SELECT id FROM " + cate + " order by id desc limit 1"
-		r, err := db.Query(query)
-		if err != nil {
-			log.Fatalln("DB Uploading ERROR :", err)
+		if already != "" { // 원래 있던 게시글의 수정 내용을 저장
+			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `" where id = ` + already
+			_, err := db.Query(query)
+			if err != nil {
+				log.Fatalln("DB Update failed ERROR :", err)
+			}
+			c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
+		} else { // 새롭게 게시물을 작성할 때 DB에 저장
+
+			// 카테고리에 맞는 다음 id는 몇 번인지 확인
+			query := "SELECT id FROM " + cate + " order by id desc limit 1"
+			r, err := db.Query(query)
+			if err != nil {
+				log.Fatalln("DB Uploading ERROR :", err)
+			}
+			defer r.Close()
+			var id int
+			for r.Next() {
+				r.Scan(&id)
+			}
+			// 카테고리에 따라 맞는 DB table에 저장
+			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(id+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `",NULL)`
+			fmt.Println(query)
+			db.Query(query)
+			// 게시판으로 이동
+			c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
 		}
-		defer r.Close()
-		var id int
-		for r.Next() {
-			r.Scan(&id)
-		}
-		// 카테고리에 따라 맞는 DB table에 저장
-		query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(id+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `",NULL)`
-		fmt.Println(query)
-		db.Query(query)
-		// 게시판으로 이동
-		c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
 	})
 
 	//게시판에서 게시글을 누르면 게시글 내용을 markdown 적용된 상태로 확인 가능
@@ -143,10 +163,6 @@ func main() {
 			log.Fatalln("Reading Markdown response ERROR occured :", err)
 			return
 		}
-		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-		fmt.Println(string(md_body))
-		fmt.Println(template.HTML(string(md_body)))
-		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
 		html_data := HTML_DATA{
 			Data_text:  template.HTML(string(md_body)),
@@ -154,9 +170,41 @@ func main() {
 			Data_cate:  data.Category,
 			Data_id:    data.Id,
 		}
-		c.HTML(http.StatusOK, "project1.html", html_data)
+		c.HTML(http.StatusOK, "postlook.html", html_data)
 	})
 
+	eg.GET("/delete", func(c *gin.Context) {
+		index := c.Query("index")
+		cate := c.Query("cate")
+		fmt.Println(index)
+		fmt.Println(cate)
+		query := "DELETE from " + cate + " where id = " + index // 해당 레코드 DB에서 지우기
+		_, err := db.Query(query)
+		if err != nil {
+			log.Fatalln("Query has ERROR :", err)
+		}
+
+		// 남은 레코드들의 id가 잘 유지되게 빈 곳 채우기
+
+		c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
+	})
+
+	eg.GET("/modify", func(c *gin.Context) {
+		index := c.Query("index")
+		cate := c.Query("listname")
+		query := "SELECT * from " + cate + " where id = " + index
+		data := DB_DATA{}
+		row, err := db.Query(query)
+		if err != nil {
+			log.Fatalln("DB Connecting ERROR occured :", err)
+			return
+		}
+		for row.Next() {
+			row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
+			data.Category = cate
+		}
+		c.HTML(http.StatusOK, "modify.html", data)
+	})
 	eg.Run(":8080")
 
 }
