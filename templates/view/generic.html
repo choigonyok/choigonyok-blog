@@ -24,7 +24,7 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">about <strong>Projects</strong></a>
+									<a href="/index.html" class="logo">about <strong>Projects</strong></a>
 									<ul class="icons">
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
@@ -40,6 +40,7 @@
 									<hr class="major" />
 										{{range $index, $value := .}}
 										<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
+										
 										<a href="/lookpage?index={{$index}}&cate={{.Category}}"><h2><strong>{{.Title}}</strong></h2></a>
 										  <br/>
 										  
@@ -47,11 +48,14 @@
 										  <br/>
 										  <br/>
 										  작성일시 : {{.Written_Time}}
-										  
+										
+										
+										
+										
+										
 										  <hr class="major" />
-										
-										
 										  {{end}}
+										
 										
 								
 									
@@ -81,11 +85,11 @@
 								<ul>
 									<li><a href="index.html">Home</a></li>
 									<li><a href="https://github.com/choigonyok/choigonyok">About me</a></li>
-									<li><a href="generic.html">Projects</a></li>
+									<li><a href="/postlist?listname=Projects">Projects</a></li>
 									<li>
 										<span class="opener">Study</span>
 										<ul>
-											<li><a href="study.html">ALL</a></li>
+											<li><a href="/postlist?listname=Study">ALL</a></li>
 											<li><a href="#">Go</a></li>
 											<li><a href="#">Gin</a></li>
 											<li><a href="#">Docker / K8s</a></li>
@@ -93,7 +97,7 @@
 											<li><a href="#">CS</a></li>
 										</ul>
 									</li>
-									<li><a href="review.html">Review</a></li>
+									<li><a href="/postlist?listname=Review">Review</a></li>
 									<li><a href="elements.html">Elements</a></li>
 									<li><a href="writing.html">Write post</a></li>
 								</ul>

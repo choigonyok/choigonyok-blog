@@ -33,14 +33,23 @@
 
 							<!-- Content -->
 								<section>
-									<header class="main">
-										<h4>{{.Data_cate}}</h4>
-										<h2>{{.Data_title}}</h2>
+										<ul class="actions">
+											<li><a href="#" class="button primary">Default</a></li>
+											<li><a href="#" class="button">Default</a></li>
+										</ul>
+										<header class="main">
+											<h4>{{.Data_cate}}</h4> 
+											
+											<h2>{{.Data_title}}</h2>
+											
+										</header>
 										
-									</header>
-									<hr class="major"/>
-										{{.Data_text}}								
-									<hr class="major" />
+										<hr class="major"/>
+										<div class="box">
+											{{.Data_text}}								
+										</div>
+										<hr class="major" />
+									
 								</section>
 						</div>
 					</div>
@@ -65,11 +74,11 @@
 								<ul>
 									<li><a href="index.html">Home</a></li>
 									<li><a href="https://github.com/choigonyok/choigonyok">About me</a></li>
-									<li><a href="generic.html">Projects</a></li>
+									<li><a href="/postlist?listname=Projects">Projects</a></li>
 									<li>
 										<span class="opener">Study</span>
 										<ul>
-											<li><a href="study.html">ALL</a></li>
+											<li><a href="/postlist?listname=Study">ALL</a></li>
 											<li><a href="#">Go</a></li>
 											<li><a href="#">Gin</a></li>
 											<li><a href="#">Docker / K8s</a></li>
@@ -77,7 +86,7 @@
 											<li><a href="#">CS</a></li>
 										</ul>
 									</li>
-									<li><a href="review.html">Review</a></li>
+									<li><a href="/postlist?listname=Review">Review</a></li>
 									<li><a href="elements.html">Elements</a></li>
 									<li><a href="writing.html">Write post</a></li>
 								</ul>

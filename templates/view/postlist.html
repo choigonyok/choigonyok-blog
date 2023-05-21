@@ -6,10 +6,12 @@
 -->
 <html>
 	<head>
-		<title>Reviews - personal Reviews</title>
+		<title>List - Projects, Review, Study</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
+		
+		
 	</head>
 	<body class="is-preload">
 
@@ -22,7 +24,7 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">personal <strong>Review</strong></a>
+									<a href="/index.html" class="logo">back to <strong>Home</strong></a>
 									<ul class="icons">
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
@@ -30,32 +32,56 @@
 								</header>
 
 							<!-- Content -->
-							<section>
-								<header class="main">
-									<h1>Review</h1>
-								</header>
+								<section>	
+									<style>
+										.image-wrapper {
+											display: flex;
+											align-items: center;
+											justify-content: center;
+											width: 250px;
+											height: 250px;
+											overflow: hidden;
+										}
+									
+										.image-wrapper img {
+											object-fit: cover;
+											width: 100%;
+											height: 100%;
+										}
+									</style>
 
-								<hr class="major" />
-								{{range $index, $value := .}}
-								<span class="image main"><img src="/assets/images/pic07.jpg" alt="" /></span>
-								<a href="/lookpage?index={{$index}}&cate={{.Category}}"><h2><strong>{{.Title}}</strong></h2></a>
-								  <br/>
-								  
-								  <h4>{{.Body}}</h4>
-								  <br/>
-								  <br/>
-								  작성일시 : {{.Written_Time}}
-								  
-								  <hr class="major" />
+							
+										{{range .}}
+										
+												<div class="row">
+													<div class="col-6 col-6 -medium" style="width : 30%">
+														<div class="image-wrapper">
+															<span class="image fit">
+																<img src="{{.Imagepath}}" alt="">
+															</span>
+														</div>
+													</div>
+											
+													<div class="col-6 col-6 -medium"  style="width : 70%">
+													<h4><strong> {{.Category}}</strong></h4>
+													<a href="/markdown?index={{.Id}}&listname={{.Category}}"><h2><strong>{{.Title}}</strong></h2></a>
+													<br/>
+													<h4> {{.Body}}</h4>
+													<br/>
+													<br/>
+													작성일시 : {{.Written_time}}
+													</div>
+												</div>
+										
+										<hr class="major" />
+										  {{end}}
+										
+										
 								
-								
-								  {{end}}
+									
 									
 							
-								
-								
-						
-							</section>
+								</section>
 						</div>
 					</div>
 
