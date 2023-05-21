@@ -32,6 +32,12 @@ type HTML_DATA struct {
 	Data_id    int
 }
 
+type PRS_id struct {
+	PID int
+	SID int
+	RID int
+}
+
 func main() {
 	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
 	if err != nil {
@@ -43,9 +49,31 @@ func main() {
 	eg.LoadHTMLGlob("./templates/**/*.html")
 	eg.Static("/assets", "./assets")
 
-	// default homepage
+	// default homepage + 아래에 최근 게시물 6개 표시
 	eg.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
+		query := "SELECT p_id, s_id, r_id from whole ORDER BY id DESC limit 6"
+		r, err := db.Query(query)
+		if err != nil {
+			log.Fatalln("DB Connetion ERROR occured :", err)
+		}
+		//@@@@@@@@@@@@@ 막힌 부분
+		//@@@@@@@@@@@@@ 막힌 부분
+		//@@@@@@@@@@@@@ 막힌 부분
+		//@@@@@@@@@@@@@ 막힌 부분
+		data := []PRS_id{}
+		for r.Next() { // 최근 post 보여줄게 6개라서
+			temp := PRS_id{}
+			r.Scan(&temp.PID, &temp.SID, &temp.RID)
+			data = append(data, temp)
+
+		}
+		//@@@@@@@@@@@@@ 막힌 부분
+		//@@@@@@@@@@@@@ 막힌 부분
+		//@@@@@@@@@@@@@ 막힌 부분
+		//@@@@@@@@@@@@@ 막힌 부분
+
+		fmt.Println(data)
+		c.HTML(http.StatusOK, "index.html", data)
 	})
 
 	// redirect to homepage
@@ -69,7 +97,16 @@ func main() {
 	// DB에서 데이터 가져와서 게시판 보여주기
 	eg.GET("/postlist", func(c *gin.Context) {
 		listname := c.Query("listname")
-		show_list_query := "SELECT * from " + listname + " order by id desc"
+		var id string
+		switch listname {
+		case "Projects":
+			id = "pid"
+		case "Review":
+			id = "rid"
+		case "Study":
+			id = "sid"
+		}
+		show_list_query := "SELECT * from " + listname + " order by " + id + " desc"
 		row, err := db.Query(show_list_query)
 		data := []DB_DATA{}
 		if err != nil {
@@ -81,49 +118,78 @@ func main() {
 			temp.Category = listname
 			data = append(data, temp)
 		}
-
-		fmt.Println(data[1].Category)
 		c.HTML(http.StatusOK, "postlist.html", data)
 	})
 
 	//write하면 DB에 저장
 	eg.POST("/write", func(c *gin.Context) {
 		already := c.Request.FormValue("Id")
-		fmt.Println(already)
-		fmt.Println(already)
-		fmt.Println(already)
-		fmt.Println(already)
-		fmt.Println(already)
 		cate := c.Request.FormValue("Cate")
 		title := c.Request.FormValue("Title")
 		body := c.Request.FormValue("Text")
+		var id, id_whole string
+		switch cate {
+		case "Projects":
+			id = "pid"
+			id_whole = "p_id"
+		case "Review":
+			id = "rid"
+			id_whole = "r_id"
+		case "Study":
+			id = "sid"
+			id_whole = "s_id"
+		}
 		if cate == "" || title == "" || body == "" {
 			http.Error(c.Writer, "THERE IS EMPTY BOX", http.StatusBadRequest)
 		}
 		if already != "" { // 원래 있던 게시글의 수정 내용을 저장
-			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `" where id = ` + already
+			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `" where ` + id + ` = ` + already
 			_, err := db.Query(query)
 			if err != nil {
 				log.Fatalln("DB Update failed ERROR :", err)
 			}
 			c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
 		} else { // 새롭게 게시물을 작성할 때 DB에 저장
-
 			// 카테고리에 맞는 다음 id는 몇 번인지 확인
-			query := "SELECT id FROM " + cate + " order by id desc limit 1"
+			query := "SELECT " + id + " FROM " + cate + " order by " + id + " desc limit 1"
 			r, err := db.Query(query)
 			if err != nil {
 				log.Fatalln("DB Uploading ERROR :", err)
 			}
 			defer r.Close()
-			var id int
+			var idnum int
 			for r.Next() {
-				r.Scan(&id)
+				r.Scan(&idnum)
 			}
 			// 카테고리에 따라 맞는 DB table에 저장
-			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(id+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `",NULL)`
+			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `",NULL)`
 			fmt.Println(query)
 			db.Query(query)
+
+			// whole table의 다음 저장할 id num 찾기
+			query = "SELECT id FROM whole ORDER BY id desc limit 1"
+			r, err = db.Query(query)
+			if err != nil {
+				log.Fatalln("DB Uploading ERROR :", err)
+			}
+			defer r.Close()
+			idnum_whole := 0
+			for r.Next() {
+				r.Scan(&idnum_whole)
+			}
+			// 맞는 카테고리에만 카테고리별 id num을 저장하고 나머지는 null로 초기화
+			switch id_whole {
+			case "p_id":
+				query = "INSERT INTO whole values (" + strconv.Itoa(idnum_whole+1) + "," + strconv.Itoa(idnum+1) + ",NULL,NULL)"
+				db.Query(query)
+			case "s_id":
+				query = "INSERT INTO whole values (" + strconv.Itoa(idnum_whole+1) + ",NULL,NULL," + strconv.Itoa(idnum+1) + ")"
+				db.Query(query)
+			case "r_id":
+				query = "INSERT INTO whole values (" + strconv.Itoa(idnum_whole+1) + ",NULL," + strconv.Itoa(idnum+1) + ",NULL)"
+				db.Query(query)
+			}
+
 			// 게시판으로 이동
 			c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
 		}
@@ -133,7 +199,16 @@ func main() {
 	eg.GET("/markdown", func(c *gin.Context) {
 		index := c.Query("index")
 		cate := c.Query("listname")
-		query := "SELECT * from " + cate + " where id = " + index
+		var id string
+		switch cate {
+		case "Projects":
+			id = "pid"
+		case "Review":
+			id = "rid"
+		case "Study":
+			id = "sid"
+		}
+		query := "SELECT * from " + cate + " where " + id + " = " + index
 		data := DB_DATA{}
 		row, err := db.Query(query)
 		if err != nil {
@@ -173,26 +248,42 @@ func main() {
 		c.HTML(http.StatusOK, "postlook.html", html_data)
 	})
 
+	// 게시글 삭제
 	eg.GET("/delete", func(c *gin.Context) {
 		index := c.Query("index")
 		cate := c.Query("cate")
-		fmt.Println(index)
-		fmt.Println(cate)
-		query := "DELETE from " + cate + " where id = " + index // 해당 레코드 DB에서 지우기
+		var id string
+		switch cate {
+		case "Projects":
+			id = "pid"
+		case "Review":
+			id = "rid"
+		case "Study":
+			id = "sid"
+		}
+		query := "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
 		_, err := db.Query(query)
 		if err != nil {
 			log.Fatalln("Query has ERROR :", err)
 		}
 
-		// 남은 레코드들의 id가 잘 유지되게 빈 곳 채우기
-
 		c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
 	})
 
+	//게시글 수정
 	eg.GET("/modify", func(c *gin.Context) {
 		index := c.Query("index")
 		cate := c.Query("listname")
-		query := "SELECT * from " + cate + " where id = " + index
+		var id string
+		switch cate {
+		case "Projects":
+			id = "pid"
+		case "Review":
+			id = "rid"
+		case "Study":
+			id = "sid"
+		}
+		query := "SELECT * from " + cate + " where " + id + " = " + index
 		data := DB_DATA{}
 		row, err := db.Query(query)
 		if err != nil {
@@ -205,6 +296,14 @@ func main() {
 		}
 		c.HTML(http.StatusOK, "modify.html", data)
 	})
+
+	// // 검색 기능
+	// eg.POST("/search", func(c *gin.Context) {
+	// 	word := c.Request.FormValue("Find")
+	// 	query := ""
+	// 	db.Query()
+	// })
+
 	eg.Run(":8080")
 
 }
