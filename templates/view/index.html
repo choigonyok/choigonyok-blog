@@ -28,28 +28,55 @@
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
 									</ul>
+									
 								</header>
 
 							<!-- Banner -->
 								<section id="banner">
 									<div class="content">
 										<header>
-											<h1>Yunsuk Choi</h1>
-											<p>&nbsp;Whose nickname is Choigonyok😎</p>
+											<br>
+											<h1>Choigonyok</h1>
+											<br>
+											<p>&nbsp;This is my blog I developed on my own😎</p>
 										</header>
+										<br>
 										<p>
 										likes studying cloud⛅️<br>
 										likes listening to vinyl records💿<br>
 										likes taking photos w/ film camera📷 <br>									
 										likes working out💪<br>
 										likes wearing fancy clothes👕
-										</p>
+										</p><br>
 										<ul class="actions">
-											<li><a href="#" class="button big">MORE ABOUT</a></li>
+											<li><a href="https://github.com/choigonyok/choigonyok" class="button big">MORE ABOUT</a></li>
 										</ul>
 									</div>
 									<span class="image object">
+
+										<style>
+											.image-wrapper {
+												display: flex;
+												align-items: center;
+												justify-content: center;
+												width: 450px;
+												height: 450px;
+												overflow: hidden;
+											}
+										
+											.image-wrapper img {
+												object-fit: cover;
+												width: 100%;
+												height: 100%;
+											}
+										</style>
+										<div class="row">
+										<div class="col-6 col-6 -medium" style="width : 100%">
+											<div class="image-wrapper">
 										<img src="/assets/images/pic10.jpeg" alt="" />
+										</div>
+										</div>
+									</div>
 									</span>
 								</section>
 
@@ -95,7 +122,7 @@
 									<header class="major">
 										<h2>Recent Posts</h2>
 									</header>
-									<hr class="major" />
+						
 									<div class="posts">
 										
 										{{range $index, $element := .}}
@@ -103,11 +130,34 @@
 									
 										
 										<article>
-											<a href="/markdown?index={{.Id}}&listname={{.Category}}" class="image"><img src="{{.Imagepath}}" alt="" /></a>
-											<h3>{{.Title}}</h3></a>
-											<p>{{.Body}}</p>
+											<style>
+												.image-wrapper1 {
+													display: flex;
+													align-items: center;
+													justify-content: center;
+													width: 400px;
+													height:200px;
+													overflow: hidden;
+												}
+											
+												.image-wrapper1 img {
+													object-fit: cover;
+													width: 100%;
+													height: 100%;
+												}
+											</style>
+											
+										<div class="row">
+											<div class="col-6 col-6 -medium" style="width : 100%">
+												<div class="image-wrapper1">
+													<a href="/markdown?index={{.Id}}&listname={{.Category}}" class="image"><img src="{{.Imagepath}}" alt="" /></a>
+												</div>
+											</div>
+										</div>
+											<h3>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp{{.Title}}</h3></a>
+											<p>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp{{.Body}}</p>
 											<ul class="actions">
-												<li><a href="/markdown?index={{.Id}}&listname={{.Category}}" class="button">More</a></li>
+												&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<li><a href="/markdown?index={{.Id}}&listname={{.Category}}" class="button">More</a></li>
 											</ul>
 										</article>
 										{{end}}

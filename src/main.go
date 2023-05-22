@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -26,22 +27,34 @@ type DB_DATA struct {
 }
 
 type HTML_DATA struct {
-	Data_text  template.HTML
-	Data_title string
-	Data_cate  string
-	Data_id    int
+	Data_text      template.HTML
+	Data_title     string
+	Data_cate      string
+	Data_id        int
+	Data_imagepath string
 }
 
+// type PRS_id struct {
+// 	ID      int
+// 	Cate_id int
+// }
+
 type PRS_id struct {
-	PID int
-	SID int
-	RID int
+	PID int //	'projects' table's primary key
+	SID int //	'study' table's primary key
+	RID int //	'review' table's primary key
+}
+
+type Recent struct {
+	Sequence int
+	Category string
+	Post_num int
 }
 
 func main() {
 	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
 	if err != nil {
-		log.Fatalln("@@@DB IS NOT CONNECTED@@@")
+		log.Fatalln("DB IS NOT CONNECTED")
 	}
 	defer db.Close()
 
@@ -51,29 +64,61 @@ func main() {
 
 	// default homepage + 아래에 최근 게시물 6개 표시
 	eg.GET("/", func(c *gin.Context) {
-		query := "SELECT p_id, s_id, r_id from whole ORDER BY id DESC limit 6"
+		query := "SELECT COALESCE(p_id, '0'), COALESCE(s_id, '0'), COALESCE(r_id, '0') from whole order by id desc limit 6"
 		r, err := db.Query(query)
 		if err != nil {
 			log.Fatalln("DB Connetion ERROR occured :", err)
 		}
-		//@@@@@@@@@@@@@ 막힌 부분
-		//@@@@@@@@@@@@@ 막힌 부분
-		//@@@@@@@@@@@@@ 막힌 부분
-		//@@@@@@@@@@@@@ 막힌 부분
 		data := []PRS_id{}
-		for r.Next() { // 최근 post 보여줄게 6개라서
+		for r.Next() { // 최근 post 보여줄 게 6개라서
 			temp := PRS_id{}
 			r.Scan(&temp.PID, &temp.SID, &temp.RID)
 			data = append(data, temp)
-
 		}
-		//@@@@@@@@@@@@@ 막힌 부분
-		//@@@@@@@@@@@@@ 막힌 부분
-		//@@@@@@@@@@@@@ 막힌 부분
-		//@@@@@@@@@@@@@ 막힌 부분
 
 		fmt.Println(data)
-		c.HTML(http.StatusOK, "index.html", data)
+		data_html := []DB_DATA{}
+		for i := 0; i < 6; i++ {
+			temp := DB_DATA{}
+			if data[i].PID != 0 {
+				query = "SELECT title, body, imagepath from projects where pid =" + strconv.Itoa(data[i].PID)
+				r, err := db.Query((query))
+				if err != nil {
+					log.Fatalln("QUERY ERROR occured :", err)
+				}
+				for r.Next() {
+					r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
+					temp.Category = "Projects"
+					temp.Id = data[i].PID
+				}
+			} else if data[i].SID != 0 {
+				query = "SELECT title, body, imagepath from study where sid =" + strconv.Itoa(data[i].SID)
+				r, err := db.Query((query))
+				if err != nil {
+					log.Fatalln("QUERY ERROR occured :", err)
+				}
+				for r.Next() {
+					r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
+					temp.Category = "Study"
+					temp.Id = data[i].SID
+				}
+			} else {
+				query = "SELECT title, body, imagepath from review where rid =" + strconv.Itoa(data[i].RID)
+				r, err := db.Query((query))
+				if err != nil {
+					log.Fatalln("QUERY ERROR occured :", err)
+				}
+				for r.Next() {
+					r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
+					temp.Category = "Review"
+					temp.Id = data[i].RID
+				}
+			}
+			data_html = append(data_html, temp)
+		}
+
+		c.HTML(http.StatusOK, "index.html", data_html)
+		// c.HTML(http.StatusOK, "index.html", data1)
 	})
 
 	// redirect to homepage
@@ -118,11 +163,17 @@ func main() {
 			temp.Category = listname
 			data = append(data, temp)
 		}
+		fmt.Println(data)
 		c.HTML(http.StatusOK, "postlist.html", data)
 	})
 
 	//write하면 DB에 저장
 	eg.POST("/write", func(c *gin.Context) {
+		image, err := c.FormFile("image")
+		if err != nil {
+			log.Fatalln("Image Uploading ERROR occured :", err)
+		}
+		c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
 		already := c.Request.FormValue("Id")
 		cate := c.Request.FormValue("Cate")
 		title := c.Request.FormValue("Title")
@@ -162,8 +213,7 @@ func main() {
 				r.Scan(&idnum)
 			}
 			// 카테고리에 따라 맞는 DB table에 저장
-			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `",NULL)`
-			fmt.Println(query)
+			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `","/assets/images/` + image.Filename + `")`
 			db.Query(query)
 
 			// whole table의 다음 저장할 id num 찾기
@@ -261,8 +311,19 @@ func main() {
 		case "Study":
 			id = "sid"
 		}
-		query := "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
-		_, err := db.Query(query)
+		query := "SELECT imagepath from " + cate + " where " + id + " = " + index
+		r, err := db.Query(query)
+		if err != nil {
+			log.Fatalln("DELETE Image ERROR occured :", err)
+		}
+		var imagepath string
+		for r.Next() {
+			r.Scan(&imagepath)
+		}
+		os.Remove("." + imagepath)
+
+		query = "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
+		_, err = db.Query(query)
 		if err != nil {
 			log.Fatalln("Query has ERROR :", err)
 		}
