@@ -24,6 +24,7 @@ type DB_DATA struct {
 	Written_time string
 	Category     string
 	Imagepath    string
+	Whole_id     int
 }
 
 type HTML_DATA struct {
@@ -34,21 +35,65 @@ type HTML_DATA struct {
 	Data_imagepath string
 }
 
-// type PRS_id struct {
-// 	ID      int
-// 	Cate_id int
-// }
-
 type PRS_id struct {
-	PID int //	'projects' table's primary key
-	SID int //	'study' table's primary key
-	RID int //	'review' table's primary key
+	PID int
+	SID int
+	RID int
 }
 
 type Recent struct {
 	Sequence int
 	Category string
 	Post_num int
+}
+
+// 게시판 전체를 합친 데이터를 DB_DATA structure에 묶어서 리턴
+func whole_cate(data []PRS_id) []DB_DATA {
+	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
+	if err != nil {
+		log.Fatalln("DB IS NOT CONNECTED")
+	}
+	defer db.Close()
+	data_html := []DB_DATA{}
+	for i := 0; i < 6; i++ {
+		temp := DB_DATA{}
+		if data[i].PID != 0 {
+			query := "SELECT title, body, imagepath from projects where pid =" + strconv.Itoa(data[i].PID)
+			r, err := db.Query((query))
+			if err != nil {
+				log.Fatalln("QUERY ERROR occured :", err)
+			}
+			for r.Next() {
+				r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
+				temp.Category = "Projects"
+				temp.Id = data[i].PID
+			}
+		} else if data[i].SID != 0 {
+			query := "SELECT title, body, imagepath from study where sid =" + strconv.Itoa(data[i].SID)
+			r, err := db.Query((query))
+			if err != nil {
+				log.Fatalln("QUERY ERROR occured :", err)
+			}
+			for r.Next() {
+				r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
+				temp.Category = "Study"
+				temp.Id = data[i].SID
+			}
+		} else {
+			query := "SELECT title, body, imagepath from review where rid =" + strconv.Itoa(data[i].RID)
+			r, err := db.Query((query))
+			if err != nil {
+				log.Fatalln("QUERY ERROR occured :", err)
+			}
+			for r.Next() {
+				r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
+				temp.Category = "Review"
+				temp.Id = data[i].RID
+			}
+		}
+		data_html = append(data_html, temp)
+	}
+	return data_html
 }
 
 func main() {
@@ -64,61 +109,19 @@ func main() {
 
 	// default homepage + 아래에 최근 게시물 6개 표시
 	eg.GET("/", func(c *gin.Context) {
-		query := "SELECT COALESCE(p_id, '0'), COALESCE(s_id, '0'), COALESCE(r_id, '0') from whole order by id desc limit 6"
+		query := "SELECT COALESCE(p_id, '0'), COALESCE(s_id, '0'), COALESCE(r_id, '0') from whole order by id desc"
 		r, err := db.Query(query)
 		if err != nil {
 			log.Fatalln("DB Connetion ERROR occured :", err)
 		}
 		data := []PRS_id{}
-		for r.Next() { // 최근 post 보여줄 게 6개라서
+		for r.Next() {
 			temp := PRS_id{}
 			r.Scan(&temp.PID, &temp.SID, &temp.RID)
 			data = append(data, temp)
 		}
 
-		fmt.Println(data)
-		data_html := []DB_DATA{}
-		for i := 0; i < 6; i++ {
-			temp := DB_DATA{}
-			if data[i].PID != 0 {
-				query = "SELECT title, body, imagepath from projects where pid =" + strconv.Itoa(data[i].PID)
-				r, err := db.Query((query))
-				if err != nil {
-					log.Fatalln("QUERY ERROR occured :", err)
-				}
-				for r.Next() {
-					r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
-					temp.Category = "Projects"
-					temp.Id = data[i].PID
-				}
-			} else if data[i].SID != 0 {
-				query = "SELECT title, body, imagepath from study where sid =" + strconv.Itoa(data[i].SID)
-				r, err := db.Query((query))
-				if err != nil {
-					log.Fatalln("QUERY ERROR occured :", err)
-				}
-				for r.Next() {
-					r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
-					temp.Category = "Study"
-					temp.Id = data[i].SID
-				}
-			} else {
-				query = "SELECT title, body, imagepath from review where rid =" + strconv.Itoa(data[i].RID)
-				r, err := db.Query((query))
-				if err != nil {
-					log.Fatalln("QUERY ERROR occured :", err)
-				}
-				for r.Next() {
-					r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
-					temp.Category = "Review"
-					temp.Id = data[i].RID
-				}
-			}
-			data_html = append(data_html, temp)
-		}
-
-		c.HTML(http.StatusOK, "index.html", data_html)
-		// c.HTML(http.StatusOK, "index.html", data1)
+		c.HTML(http.StatusOK, "index.html", whole_cate(data))
 	})
 
 	// redirect to homepage
@@ -163,17 +166,19 @@ func main() {
 			temp.Category = listname
 			data = append(data, temp)
 		}
-		fmt.Println(data)
 		c.HTML(http.StatusOK, "postlist.html", data)
 	})
 
 	//write하면 DB에 저장
 	eg.POST("/write", func(c *gin.Context) {
 		image, err := c.FormFile("image")
+		var imagename string
 		if err != nil {
-			log.Fatalln("Image Uploading ERROR occured :", err)
+			imagename = "6C9290D0-24A4-409A-B5E2-6734DBE87B5B_1_105_c.jpeg"
+		} else {
+			c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
+			imagename = image.Filename
 		}
-		c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
 		already := c.Request.FormValue("Id")
 		cate := c.Request.FormValue("Cate")
 		title := c.Request.FormValue("Title")
@@ -194,7 +199,7 @@ func main() {
 			http.Error(c.Writer, "THERE IS EMPTY BOX", http.StatusBadRequest)
 		}
 		if already != "" { // 원래 있던 게시글의 수정 내용을 저장
-			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `" where ` + id + ` = ` + already
+			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `", imagepath = "/assets/images/` + imagename + `" where ` + id + ` = ` + already
 			_, err := db.Query(query)
 			if err != nil {
 				log.Fatalln("DB Update failed ERROR :", err)
@@ -213,7 +218,7 @@ func main() {
 				r.Scan(&idnum)
 			}
 			// 카테고리에 따라 맞는 DB table에 저장
-			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `","/assets/images/` + image.Filename + `")`
+			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `","/assets/images/` + imagename + `")`
 			db.Query(query)
 
 			// whole table의 다음 저장할 id num 찾기
@@ -249,6 +254,7 @@ func main() {
 	eg.GET("/markdown", func(c *gin.Context) {
 		index := c.Query("index")
 		cate := c.Query("listname")
+
 		var id string
 		switch cate {
 		case "Projects":
@@ -276,6 +282,7 @@ func main() {
 		}{
 			Text: data.Body,
 		}
+
 		jsonStr := []byte(fmt.Sprintf(`{"text": "%s"}`, md_data.Text))
 		res, err := http.Post(URL, "application/json", bytes.NewBuffer(jsonStr))
 		if err != nil {
@@ -288,13 +295,14 @@ func main() {
 			log.Fatalln("Reading Markdown response ERROR occured :", err)
 			return
 		}
-
 		html_data := HTML_DATA{
-			Data_text:  template.HTML(string(md_body)),
-			Data_title: data.Title,
-			Data_cate:  data.Category,
-			Data_id:    data.Id,
+			Data_text:      template.HTML(string(md_body)),
+			Data_title:     data.Title,
+			Data_cate:      data.Category,
+			Data_id:        data.Id,
+			Data_imagepath: data.Imagepath,
 		}
+
 		c.HTML(http.StatusOK, "postlook.html", html_data)
 	})
 
@@ -358,12 +366,62 @@ func main() {
 		c.HTML(http.StatusOK, "modify.html", data)
 	})
 
-	// // 검색 기능
-	// eg.POST("/search", func(c *gin.Context) {
-	// 	word := c.Request.FormValue("Find")
-	// 	query := ""
-	// 	db.Query()
-	// })
+	// 검색 기능
+	eg.POST("/search", func(c *gin.Context) {
+		str := c.Request.FormValue("Find")
+		data := []DB_DATA{}
+		query := "select id, pid, title, body, datetime, imagepath from whole join projects on whole.p_id = projects.pid where body like '%" + str + "%' order by id desc"
+		r, err := db.Query(query)
+		if err != nil {
+			log.Fatalln("DB Connecting ERROR occured :", err)
+		}
+		for r.Next() {
+			var temp DB_DATA
+			r.Scan(&temp.Whole_id, &temp.Id, &temp.Title, &temp.Body, &temp.Written_time, &temp.Imagepath)
+			temp.Category = "Projects"
+			data = append(data, temp)
+		}
+
+		query = "select id, sid, title, body, datetime, imagepath from whole join Study on whole.s_id = study.sid where body like '%" + str + "%' order by id desc"
+		r, err = db.Query(query)
+		if err != nil {
+			log.Fatalln("DB Connecting ERROR occured :", err)
+		}
+		for r.Next() {
+			var temp DB_DATA
+			r.Scan(&temp.Whole_id, &temp.Id, &temp.Title, &temp.Body, &temp.Written_time, &temp.Imagepath)
+			temp.Category = "Study"
+			data = append(data, temp)
+		}
+
+		query = "select id, rid, title, body, datetime, imagepath from whole join Review on whole.r_id = review.rid where body like '%" + str + "%' order by id desc"
+		r, err = db.Query(query)
+		if err != nil {
+			log.Fatalln("DB Connecting ERROR occured :", err)
+		}
+		for r.Next() {
+			var temp DB_DATA
+			r.Scan(&temp.Whole_id, &temp.Id, &temp.Title, &temp.Body, &temp.Written_time, &temp.Imagepath)
+			temp.Category = "Review"
+			data = append(data, temp)
+		}
+
+		// 검색결과를 최신순으로 sorting
+		for i := 0; i < len(data)-1; i++ {
+			for j := 0; j < len(data)-1-i; j++ {
+				if data[i].Whole_id < data[i+j+1].Whole_id {
+					data[i], data[i+j+1] = data[i+j+1], data[i]
+				}
+			}
+		}
+
+		if len(data) == 0 {
+			c.HTML(http.StatusOK, "nopost.html", str)
+		} else {
+			c.HTML(http.StatusOK, "postlist.html", data)
+		}
+
+	})
 
 	eg.Run(":8080")
 

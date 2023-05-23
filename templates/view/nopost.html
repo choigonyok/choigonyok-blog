@@ -6,10 +6,12 @@
 -->
 <html>
 	<head>
-		<title>Projects - about Projects</title>
+		<title>List - Projects, Review, Study</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
+		
+		
 	</head>
 	<body class="is-preload">
 
@@ -22,7 +24,7 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">write <strong>Post</strong></a>
+									<a href="/index.html" class="logo">back to <strong>Home</strong></a>
 									<ul class="icons">
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
@@ -30,38 +32,18 @@
 								</header>
 
 							<!-- Content -->
-								<section>
-									<header class="main">
-										<h1>Posting</h1>
-									</header>
-									<hr class="major"/>
-									
-									<form action="/write" method="post" enctype="multipart/form-data">
-										<input type="file" name="image" value="" action="Upload" >{{.Imagepath}}</input>
-										</br>
-										<div class="col-6 col-6-xsmall">
-											<input type="hidden" name="Cate" id="Cate" value="{{.Category}}" />
-											<input type="hidden" name="Id" id="Id" value="{{.Id}}" />
-											<h2>Title</h2>
-											<p><textarea name="Title" id="Title" placeholder= "Write Title..." cols="20" rows="1" value="">{{.Title}}</textarea>
-										</div>
-										<div class="col-6 col-12-xsmall">
+								<section>	
+									<h1>THERE IS NO POST WITH " {{.}} "</h1>
 
-										</div>
-										</br>
-										<h2>Text</h2>
-										<p><textarea name="Text" id="Text" placeholder= "Write Body..." cols="50" rows="20" value="">{{.Body}}</textarea>
-										</p>
-									   		<div class="major">
-												<ul class="actions">
-													<li><input type="submit" id="submit" value="Upload" class="primary" />
-													</li>	
-												</ul>
-											</div>
-									</form>
+							
+										<hr class="major" />
+										  
+										
+										
 								
 									
-
+									
+							
 								</section>
 						</div>
 					</div>
@@ -70,12 +52,12 @@
 					<div id="sidebar">
 						<div class="inner">
 
-								<!-- Search -->
-								<section id="search" class="alt">
-									<form method="post" action="/search">
-										<input type="text" name="Find" id="Find" placeholder="Search" />
-									</form>
-								</section>
+							<!-- Search -->
+							<section id="search" class="alt">
+								<form method="post" action="/search">
+									<input type="text" name="Find" id="Find" placeholder="Search" />
+								</form>
+							</section>
 
 							<!-- Menu -->
 							<nav id="menu">
