@@ -137,7 +137,7 @@ func main() {
 				c.HTML(http.StatusOK, "writing.html", nil)
 			}
 		}
-		c.HTML(http.StatusOK, "login.html", "writing")
+		c.Redirect(http.StatusSeeOther, "/loginpage")
 
 	})
 
@@ -181,7 +181,7 @@ func main() {
 		image, err := c.FormFile("image")
 		var imagename string
 		if err != nil {
-			imagename = "6C9290D0-24A4-409A-B5E2-6734DBE87B5B_1_105_c.jpeg"
+			imagename = "profile.jpeg"
 		} else {
 			c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
 			imagename = image.Filename
@@ -190,6 +190,7 @@ func main() {
 		cate := c.Request.FormValue("Cate")
 		title := c.Request.FormValue("Title")
 		body := c.Request.FormValue("Text")
+		body = strings.ReplaceAll(body, `"`, `$`)
 		var id, id_whole string
 		switch cate {
 		case "Projects":
@@ -281,6 +282,7 @@ func main() {
 			row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
 			data.Category = cate
 		}
+		data.Body = strings.ReplaceAll(data.Body, "$", `"`)
 		data.Body = strings.ReplaceAll(data.Body, "\r\n", `\r\n`)
 		URL := "https://api.github.com/markdown"
 		md_data := struct {
@@ -300,8 +302,9 @@ func main() {
 		if err != nil {
 			log.Fatalln("Reading Markdown response ERROR occured :", err)
 		}
+		body := string(md_body)
 		html_data := HTML_DATA{
-			Data_text:      template.HTML(string(md_body)),
+			Data_text:      template.HTML(body),
 			Data_title:     data.Title,
 			Data_cate:      data.Category,
 			Data_id:        data.Id,
@@ -380,6 +383,7 @@ func main() {
 				row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
 				data.Category = cate
 			}
+			data.Body = strings.ReplaceAll(data.Body, `$`, `"`)
 			c.HTML(http.StatusOK, "modify.html", data)
 		}
 	})
@@ -445,12 +449,9 @@ func main() {
 		id := c.PostForm("ID")
 		pw := c.PostForm("PASSWORD")
 		from := c.PostForm("from")
-		fmt.Println(from)
-		fmt.Println(id)
-		fmt.Println(pw)
 		if id == "achoistic98" {
 			if pw == "levor0805" {
-				c.SetCookie("admistrator", "OK", 30, "/", "", false, false)
+				c.SetCookie("admistrator", "OK", 7200, "/", "", false, false)
 				if from == "writing" {
 					c.HTML(http.StatusOK, "writing.html", nil)
 				} else {
@@ -464,6 +465,7 @@ func main() {
 		}
 	})
 
+	// 로그인페이지로 넘어가는 핸들러
 	eg.GET("/loginpage", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.html", nil)
 	})
