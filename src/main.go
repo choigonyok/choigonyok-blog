@@ -131,7 +131,14 @@ func main() {
 
 	// writing page
 	eg.GET("/writing.html", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "writing.html", nil)
+		value, err := c.Cookie("admistrator")
+		if err != http.ErrNoCookie {
+			if value == "OK" {
+				c.HTML(http.StatusOK, "writing.html", nil)
+			}
+		}
+		c.HTML(http.StatusOK, "login.html", "writing")
+
 	})
 
 	eg.GET("/project1.html", func(c *gin.Context) {
@@ -269,7 +276,6 @@ func main() {
 		row, err := db.Query(query)
 		if err != nil {
 			log.Fatalln("DB Connecting ERROR occured :", err)
-			return
 		}
 		for row.Next() {
 			row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
@@ -293,7 +299,6 @@ func main() {
 		md_body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			log.Fatalln("Reading Markdown response ERROR occured :", err)
-			return
 		}
 		html_data := HTML_DATA{
 			Data_text:      template.HTML(string(md_body)),
@@ -308,62 +313,75 @@ func main() {
 
 	// 게시글 삭제
 	eg.GET("/delete", func(c *gin.Context) {
-		index := c.Query("index")
-		cate := c.Query("cate")
-		var id string
-		switch cate {
-		case "Projects":
-			id = "pid"
-		case "Review":
-			id = "rid"
-		case "Study":
-			id = "sid"
-		}
-		query := "SELECT imagepath from " + cate + " where " + id + " = " + index
-		r, err := db.Query(query)
-		if err != nil {
-			log.Fatalln("DELETE Image ERROR occured :", err)
-		}
-		var imagepath string
-		for r.Next() {
-			r.Scan(&imagepath)
-		}
-		os.Remove("." + imagepath)
+		value, err := c.Cookie("admistrator")
+		if err == http.ErrNoCookie {
+			c.Redirect(http.StatusSeeOther, "/loginpage")
+		} else if value != "OK" {
+			c.Redirect(http.StatusSeeOther, "/loginpage")
+		} else {
+			index := c.Query("index")
+			cate := c.Query("cate")
+			var id string
+			switch cate {
+			case "Projects":
+				id = "pid"
+			case "Review":
+				id = "rid"
+			case "Study":
+				id = "sid"
+			}
+			query := "SELECT imagepath from " + cate + " where " + id + " = " + index
+			r, err := db.Query(query)
+			if err != nil {
+				log.Fatalln("DELETE Image ERROR occured :", err)
+			}
+			var imagepath string
+			for r.Next() {
+				r.Scan(&imagepath)
+			}
+			os.Remove("." + imagepath)
 
-		query = "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
-		_, err = db.Query(query)
-		if err != nil {
-			log.Fatalln("Query has ERROR :", err)
-		}
+			query = "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
+			_, err = db.Query(query)
+			if err != nil {
+				log.Fatalln("Query has ERROR :", err)
+			}
 
-		c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
+			c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
+		}
 	})
 
 	//게시글 수정
 	eg.GET("/modify", func(c *gin.Context) {
-		index := c.Query("index")
-		cate := c.Query("listname")
-		var id string
-		switch cate {
-		case "Projects":
-			id = "pid"
-		case "Review":
-			id = "rid"
-		case "Study":
-			id = "sid"
+		value, err := c.Cookie("admistrator")
+		if err == http.ErrNoCookie {
+			c.Redirect(http.StatusSeeOther, "/loginpage")
+		} else if value != "OK" {
+			c.Redirect(http.StatusSeeOther, "/loginpage")
+		} else {
+			index := c.Query("index")
+			cate := c.Query("listname")
+			var id string
+			switch cate {
+			case "Projects":
+				id = "pid"
+			case "Review":
+				id = "rid"
+			case "Study":
+				id = "sid"
+			}
+			query := "SELECT * from " + cate + " where " + id + " = " + index
+			data := DB_DATA{}
+			row, err := db.Query(query)
+			if err != nil {
+				log.Fatalln("DB Connecting ERROR occured :", err)
+			}
+			for row.Next() {
+				row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
+				data.Category = cate
+			}
+			c.HTML(http.StatusOK, "modify.html", data)
 		}
-		query := "SELECT * from " + cate + " where " + id + " = " + index
-		data := DB_DATA{}
-		row, err := db.Query(query)
-		if err != nil {
-			log.Fatalln("DB Connecting ERROR occured :", err)
-			return
-		}
-		for row.Next() {
-			row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
-			data.Category = cate
-		}
-		c.HTML(http.StatusOK, "modify.html", data)
 	})
 
 	// 검색 기능
@@ -421,6 +439,33 @@ func main() {
 			c.HTML(http.StatusOK, "postlist.html", data)
 		}
 
+	})
+
+	eg.POST("/login", func(c *gin.Context) {
+		id := c.PostForm("ID")
+		pw := c.PostForm("PASSWORD")
+		from := c.PostForm("from")
+		fmt.Println(from)
+		fmt.Println(id)
+		fmt.Println(pw)
+		if id == "achoistic98" {
+			if pw == "levor0805" {
+				c.SetCookie("admistrator", "OK", 30, "/", "", false, false)
+				if from == "writing" {
+					c.HTML(http.StatusOK, "writing.html", nil)
+				} else {
+					c.Redirect(http.StatusSeeOther, "/")
+				}
+			} else {
+				c.Redirect(http.StatusSeeOther, "/")
+			}
+		} else {
+			c.Redirect(http.StatusSeeOther, "/")
+		}
+	})
+
+	eg.GET("/loginpage", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.html", nil)
 	})
 
 	eg.Run(":8080")
