@@ -25,6 +25,7 @@ type DB_DATA struct {
 	Category     string
 	Imagepath    string
 	Whole_id     int
+	Visit_num    int
 }
 
 type HTML_DATA struct {
@@ -47,18 +48,33 @@ type Recent struct {
 	Post_num int
 }
 
+type Visit struct {
+	Data []PRS_id
+	Tc   Timecheck
+}
+
+type Retrun_visit struct {
+	Dd []DB_DATA
+	Tc Timecheck
+}
+
+type Timecheck struct {
+	Totalnum int
+	Visitnum int
+}
+
 // 게시판 전체를 합친 데이터를 DB_DATA structure에 묶어서 리턴
-func whole_cate(data []PRS_id) []DB_DATA {
+func whole_cate(data Visit) Retrun_visit {
 	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
 	if err != nil {
 		log.Fatalln("DB IS NOT CONNECTED")
 	}
 	defer db.Close()
-	data_html := []DB_DATA{}
+	data_html := Retrun_visit{}
 	for i := 0; i < 6; i++ {
 		temp := DB_DATA{}
-		if data[i].PID != 0 {
-			query := "SELECT title, body, imagepath from projects where pid =" + strconv.Itoa(data[i].PID)
+		if data.Data[i].PID != 0 {
+			query := "SELECT title, body, imagepath from projects where pid =" + strconv.Itoa(data.Data[i].PID)
 			r, err := db.Query((query))
 			if err != nil {
 				log.Fatalln("QUERY ERROR occured :", err)
@@ -66,10 +82,10 @@ func whole_cate(data []PRS_id) []DB_DATA {
 			for r.Next() {
 				r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
 				temp.Category = "Projects"
-				temp.Id = data[i].PID
+				temp.Id = data.Data[i].PID
 			}
-		} else if data[i].SID != 0 {
-			query := "SELECT title, body, imagepath from study where sid =" + strconv.Itoa(data[i].SID)
+		} else if data.Data[i].SID != 0 {
+			query := "SELECT title, body, imagepath from study where sid =" + strconv.Itoa(data.Data[i].SID)
 			r, err := db.Query((query))
 			if err != nil {
 				log.Fatalln("QUERY ERROR occured :", err)
@@ -77,10 +93,10 @@ func whole_cate(data []PRS_id) []DB_DATA {
 			for r.Next() {
 				r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
 				temp.Category = "Study"
-				temp.Id = data[i].SID
+				temp.Id = data.Data[i].SID
 			}
 		} else {
-			query := "SELECT title, body, imagepath from review where rid =" + strconv.Itoa(data[i].RID)
+			query := "SELECT title, body, imagepath from review where rid =" + strconv.Itoa(data.Data[i].RID)
 			r, err := db.Query((query))
 			if err != nil {
 				log.Fatalln("QUERY ERROR occured :", err)
@@ -88,15 +104,23 @@ func whole_cate(data []PRS_id) []DB_DATA {
 			for r.Next() {
 				r.Scan(&temp.Title, &temp.Body, &temp.Imagepath)
 				temp.Category = "Review"
-				temp.Id = data[i].RID
+				temp.Id = data.Data[i].RID
 			}
 		}
-		data_html = append(data_html, temp)
+		data_html.Dd = append(data_html.Dd, temp)
 	}
+	data_html.Tc = data.Tc
 	return data_html
 }
 
 func main() {
+	totalnum := 0
+	visitnum := 0
+	// fmt.Println(time.Now().Format("15:04:05"))
+	// t, err := time.Parse("15:04:05","08:37:00")
+	// if err != nil {
+	// 	log.Fatalln("TIME CONVERT ERROR occured :",err)
+	// } TEST
 	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
 	if err != nil {
 		log.Fatalln("DB IS NOT CONNECTED")
@@ -109,6 +133,21 @@ func main() {
 
 	// default homepage + 아래에 최근 게시물 6개 표시
 	eg.GET("/", func(c *gin.Context) {
+		_, err := c.Cookie("visit")
+		if err == http.ErrNoCookie {
+			c.SetCookie("visit", "OK", 0, "", "", false, false)
+			visitnum += 1
+		}
+		visitnum++
+		if time.Now().Format("15:04:05") == "00:00:00" {
+			totalnum += visitnum
+			visitnum = 0
+		}
+		// } else if value != "OK" {
+		// 	c.SetCookie("visit", "OK", 0, "", "", false, false)
+		// 	visitnum += 1
+		// }
+
 		query := "SELECT COALESCE(p_id, '0'), COALESCE(s_id, '0'), COALESCE(r_id, '0') from whole order by id desc"
 		r, err := db.Query(query)
 		if err != nil {
@@ -120,8 +159,16 @@ func main() {
 			r.Scan(&temp.PID, &temp.SID, &temp.RID)
 			data = append(data, temp)
 		}
+		tc := Timecheck{
+			Totalnum: totalnum,
+			Visitnum: visitnum,
+		}
+		data_html := Visit{
+			data,
+			tc,
+		}
 
-		c.HTML(http.StatusOK, "index.html", whole_cate(data))
+		c.HTML(http.StatusOK, "index.html", whole_cate(data_html))
 	})
 
 	// redirect to homepage

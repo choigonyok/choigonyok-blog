@@ -24,6 +24,11 @@
 							<!-- Header -->
 								<header id="header">
 									<a href="index.html" class="logo"><strong>Introduce</strong> myself</a>
+									<form action="" method="post" enctype="application/json">
+									
+										
+									
+									</form>
 									<ul class="icons">
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
@@ -125,7 +130,7 @@
 						
 									<div class="posts">
 										
-										{{range $index, $element := .}}
+										{{range $index, $element := .Dd}}
 										{{if lt $index 6}}
 									
 										
@@ -156,11 +161,9 @@
 											</div>
 										</div>
 										<br>	
-										<h3>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp{{.Title}}</h3></a>
+										<h3>&nbsp&nbsp&nbsp&nbsp{{.Title}}</h3></a>
 									
-											<ul class="actions">
-												&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<li><a href="/markdown?index={{.Id}}&listname={{.Category}}" class="button">More</a></li>
-											</ul>
+							
 										</article>
 										{{end}}
 										{{end}}
@@ -183,6 +186,7 @@
 
 							<!-- Menu -->
 							<nav id="menu">
+								<h4><strong>Today : {{.Tc.Visitnum}} &nbsp;/&nbsp;Total : {{.Tc.Totalnum}}</strong></h4>
 								<header class="major">
 									<b style="font-size: 48px;"><strong>Techlog</strong></b></br>
 									<h3>&nbsp;Choigonyok</h3>
