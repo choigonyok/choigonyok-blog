@@ -84,44 +84,6 @@
 									</div>
 									</span>
 								</section>
-														
-							<!-- Section -->
-								<section>
-									<header class="major">
-										<h2>What I love</h2>
-									</header>
-									<div class="features">
-										<article>
-											<span class="icon fa-gem"></span>
-											<div class="content">
-												<h3>클라우드 컴퓨팅</h3>
-												<p>AWS, GCP 등의 클라우드 컴퓨팅 서비스,</br>Naver MY BOX, Google Drive 등의</br> 클라우드 스토리지 서비스,</br>Docker와 K8S로 구축하는</br>마이크로 서비스 아키텍처에 관심이 있습니다. </p>
-											</div>
-										</article>
-										<article>
-											<span class="icon solid fa-paper-plane"></span>
-											<div class="content">
-												<h3>음악</h3>
-												<p>드럼, 바이올린 등의 악기 연주와 노래,</br>Cubase를 활용한 작곡/작사/편곡과 믹싱/마스터링,</br> Coldplay, Oasis, Nothing But Thieves 등의</br>브릿팝, 얼터너티브락과 LP에 관심이 있습니다.  </p>
-											</div>
-										</article>
-										<article>
-											<span class="icon solid fa-rocket"></span>
-											<div class="content">
-												<h3>웹 어플리케이션</h3>
-												<p>클라우드 서비스를 제공하는데 필요한</br> 웹 어플리케이션 구축,</br>TDD, DDD, 클린아키텍처 등의 설계,</br>GO 언어와 GO 웹 프레임워크 Gin, Fiber,</br>MongoDB와 MySQL 등의</br>데이터베이스에 관심이 있습니다.</p>
-											</div>
-										</article>
-										<article>
-											<span class="icon solid fa-signal"></span>
-											<div class="content">
-												<h3>기타</h3>
-												<p>어쿠스틱 기타, 일렉 기타, 베이스 기타 연주,</br>Kotaro Oshio, Andy Mckee, Okapi 등의</br>기타리스트,</br>Gibson, Taylor, Martin 등의 기타 회사,</br>핑거스타일 장르에 관심이 있습니다.</p>
-											</div>
-										</article>
-									</div>
-								</section>
-
 							<!-- Section -->
 								<section>
 									<header class="major">
@@ -186,11 +148,24 @@
 
 							<!-- Menu -->
 							<nav id="menu">
-								<h4><strong>Today : {{.Tc.Visitnum}} &nbsp;/&nbsp;Total : {{.Tc.Totalnum}}</strong></h4>
+								
 								<header class="major">
-									<b style="font-size: 48px;"><strong>Techlog</strong></b></br>
-									<h3>&nbsp;Choigonyok</h3>
+									<h3>&nbsp;Yunsuk Choi</h3>
 								</header>
+								<b style="font-size: 48px;"><strong>Techlog</strong></b></br>
+								<br>
+								<div class="row">
+									<div class="col-6 col-12-small">
+										<div class="box">
+											<h4><strong>Today : {{.Tc.Visitnum}}</strong></h4>
+										</div>
+									</div>
+									<div class="col-6 col-12-small">
+										<div class="box">
+											<h4><strong>Total : {{.Tc.Totalnum}}</strong></h4>
+										</div>
+									</div>
+								</div>
 								<ul>
 									<li><a href="index.html">Home</a></li>
 									<li><a href="https://github.com/choigonyok/choigonyok">About me</a></li>
