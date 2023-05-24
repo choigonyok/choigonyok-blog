@@ -34,6 +34,13 @@ type HTML_DATA struct {
 	Data_cate      string
 	Data_id        int
 	Data_imagepath string
+	BeforeAndAfter []Post_DATA
+}
+
+type Post_DATA struct {
+	ID       int
+	Category string
+	Where    string
 }
 
 type PRS_id struct {
@@ -143,10 +150,6 @@ func main() {
 			totalnum += visitnum
 			visitnum = 0
 		}
-		// } else if value != "OK" {
-		// 	c.SetCookie("visit", "OK", 0, "", "", false, false)
-		// 	visitnum += 1
-		// }
 
 		query := "SELECT COALESCE(p_id, '0'), COALESCE(s_id, '0'), COALESCE(r_id, '0') from whole order by id desc"
 		r, err := db.Query(query)
@@ -349,6 +352,7 @@ func main() {
 		if err != nil {
 			log.Fatalln("Reading Markdown response ERROR occured :", err)
 		}
+
 		body := string(md_body)
 		html_data := HTML_DATA{
 			Data_text:      template.HTML(body),
@@ -357,6 +361,47 @@ func main() {
 			Data_id:        data.Id,
 			Data_imagepath: data.Imagepath,
 		}
+
+		// 이전 포스트, 다음 포스트로 넘어가기 위해 before/after post의 id, cate 찾기
+		exist := ""
+		// 이전 포스트 존재 여부 확인
+		query = "SELECT " + id + " FROM " + cate + " where " + id + " < " + index + " order by " + id + " desc limit 1"
+		r_before, err := db.Query(query)
+		if err != nil {
+			log.Fatalln("BEFORE POST UPLOADING ERROR occured :", err)
+		}
+		if r_before.Next() {
+			var temp_before Post_DATA
+			r_before.Scan(&temp_before.ID)
+			temp_before.Category = cate
+			html_data.BeforeAndAfter = append(html_data.BeforeAndAfter, temp_before)
+			exist += "b"
+		}
+
+		// 다음 포스트 존재 여부 확인
+		query2 := "SELECT " + id + " FROM " + cate + " where " + id + " > " + index + " order by " + id + " asc limit 1"
+		r_after, err := db.Query(query2)
+		if err != nil {
+			log.Fatalln("AFTER POST UPLOADING ERROR occured :", err)
+		}
+		if r_after.Next() { // 다음 포스트가 있으면
+			var temp_after Post_DATA
+			r_after.Scan(&temp_after.ID)
+			temp_after.Category = cate
+			html_data.BeforeAndAfter = append(html_data.BeforeAndAfter, temp_after)
+			exist += "a"
+		}
+		// case 에 따라서 버튼에 추가할 이름 정의
+		if exist == "a" {
+			html_data.BeforeAndAfter[0].Where = "다음 포스트"
+		} else if exist == "b" {
+			html_data.BeforeAndAfter[0].Where = "이전 포스트"
+		} else {
+			html_data.BeforeAndAfter[0].Where = "이전 포스트"
+			html_data.BeforeAndAfter[1].Where = "다음 포스트"
+		}
+
+		// 전체 게시판에서의 예외처리 헤야함
 
 		c.HTML(http.StatusOK, "postlook.html", html_data)
 	})

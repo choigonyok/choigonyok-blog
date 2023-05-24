@@ -10,27 +10,21 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
-		
 	</head>
 	<body class="is-preload">
-
 		<!-- Wrapper -->
 			<div id="wrapper">
-
 				<!-- Main -->
 					<div id="main">
 						<div class="inner">
-
 							<!-- Header -->
-							
 								<header id="header">
-									<a href="index.html" class="logo">about <strong>Projects</strong></a>
+									<a href="index.html" class="logo">back to <strong>Home</strong></a>
 									<ul class="icons">
 										<li><a href="https://github.com/choigonyok" class="icon brands fa-github"><span class="label">Github</span></a></li>
 										<li><a href="https://www.instagram.com/choigonyok" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
 									</ul>
 								</header>
-
 							<!-- Content -->
 								<section>
 									<ul class="actions">
@@ -43,28 +37,33 @@
 										    height: 300px;
 										}
 									</style>
-										
 										<div class="image-container">
 											<img src="{{.Data_imagepath}}" alt="" style="object-fit: cover; width: 100%; height: 100%;">
 										</div>
 										<br>
 										<header class="main">
 											<h4>{{.Data_cate}}</h4> 
-											
 											<h2>{{.Data_title}}</h2>
-											
 										</header>
 										
 										<hr class="major"/>
-										<div class="box">
-											{{.Data_text}}								
-										</div>
+											<div class="row">		
+												{{range .BeforeAndAfter}}	
+												<div class="col-6 col-12-small">											
+													<div class="box">
+														<a href="/markdown?index={{.ID}}&listname={{.Category}}"><h2><strong>{{.Where}}</strong></h2></a>
+													</div>
+												</div>
+												{{end}}
+											</div>	
+										<hr class="major"/>
+											<div class="box">
+												{{.Data_text}}								
+											</div>
 										<hr class="major" />
-									
 								</section>
 						</div>
 					</div>
-
 				<!-- Sidebar -->
 					<div id="sidebar">
 						<div class="inner">
