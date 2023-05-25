@@ -231,11 +231,13 @@ func main() {
 		image, err := c.FormFile("image")
 		var imagename string
 		if err != nil {
-			imagename = "ACAC4F47-2E85-412C-98F0-E3750922E1D9_4_5005_c.jpeg"
+			imagename = "A5CC2571-3CEE-490B-A0FD-B7F1B0F4A642_4_5005_c.jpeg"
 		} else {
 			c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
 			imagename = image.Filename
 		}
+		
+
 		already := c.Request.FormValue("Id")
 		cate := c.Request.FormValue("Cate")
 		title := c.Request.FormValue("Title")
@@ -451,7 +453,6 @@ func main() {
 
 	//게시글 수정
 	eg.GET("/modify", func(c *gin.Context) {
-		
 		value, err := c.Cookie("admistrator")
 		if err == http.ErrNoCookie {
 			c.Redirect(http.StatusSeeOther, "/loginpage")
@@ -476,8 +477,13 @@ func main() {
 				log.Fatalln("DB Connecting ERROR occured :", err)
 			}
 			for row.Next() {
-				row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &data.Imagepath)
+				var imagepath string
+				row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &imagepath)
 				data.Category = cate
+				if strings.Contains(imagepath, "/assets"){
+					_, imagepath, _ = strings.Cut(imagepath, "/assets/images/")
+				}
+				data.Imagepath = imagepath
 			}
 			data.Body = strings.ReplaceAll(data.Body, `$`, `"`)
 			c.HTML(http.StatusOK, "modify.html", data)
@@ -487,6 +493,7 @@ func main() {
 	// 검색 기능
 	eg.POST("/search", func(c *gin.Context) {
 		str := c.Request.FormValue("Find")
+		str = strings.ReplaceAll(str, `'`, "")
 		data := []DB_DATA{}
 		query := "select id, pid, title, body, datetime, imagepath from whole join projects on whole.p_id = projects.pid where body like '%" + str + "%' order by id desc"
 		r, err := db.Query(query)
