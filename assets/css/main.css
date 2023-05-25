@@ -112,11 +112,11 @@ a {
   -ms-transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
   transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
   border-bottom: dotted 1px;
-  color: #5c3d1d;
+  color: #f56a6a;
   text-decoration: none; }
   a:hover {
-    border-bottom-color: #5c3d1d;
-    color: #5c3d1d !important; }
+    border-bottom-color: #f56a6a;
+    color: #f56a6a !important; }
     a:hover strong {
       color: inherit; }
 
@@ -1056,7 +1056,7 @@ textarea {
   input[type="url"]:focus,
   select:focus,
   textarea:focus {
-    border-color: #5c3d1d;
+    border-color: #f56a6a;
     box-shadow: 0 0 0 1px #f56a6a; }
 
 select {
@@ -1216,7 +1216,6 @@ input[type="radio"] + label:before {
   border: 0;
   display: inline-block;
   position: relative; }
-  
   .image img {
     border-radius: 0.375em;
     display: block; }
@@ -2272,4 +2271,3 @@ button,
     border-top: 0;
     margin-top: 0;
     padding-top: 0; }
-  

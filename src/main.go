@@ -231,7 +231,7 @@ func main() {
 		image, err := c.FormFile("image")
 		var imagename string
 		if err != nil {
-			imagename = "profile.jpeg"
+			imagename = "ACAC4F47-2E85-412C-98F0-E3750922E1D9_4_5005_c.jpeg"
 		} else {
 			c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
 			imagename = image.Filename
@@ -434,7 +434,10 @@ func main() {
 			for r.Next() {
 				r.Scan(&imagepath)
 			}
-			os.Remove("." + imagepath)
+			// default image 이면 지우지 않도록
+			if imagepath != "./assets/images/ACAC4F47-2E85-412C-98F0-E3750922E1D9_4_5005_c.jpeg"{
+				os.Remove("." + imagepath)
+			}
 
 			query = "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
 			_, err = db.Query(query)
@@ -448,6 +451,7 @@ func main() {
 
 	//게시글 수정
 	eg.GET("/modify", func(c *gin.Context) {
+		
 		value, err := c.Cookie("admistrator")
 		if err == http.ErrNoCookie {
 			c.Redirect(http.StatusSeeOther, "/loginpage")
