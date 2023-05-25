@@ -250,11 +250,8 @@ c.Query(query)
 
 ## 다음에 구현할 것
   
-  1. 게시글 휴지통 기능(삭제/복원) 구현
   ~~2. 앞뒤 글로 이동하기 기능~~
   ~~3. 방문자 수 확인~~
-  4. 글 수정해도 이미지 그대로 유지되도록
-        수정할 때마다 이미지가 디폴트로 바뀜 + 이미지는 서버에 그대로 있는데 디폴트로 바뀌니까, 글을 삭제한다고 해도 서버에 남아있는 이미지는 삭제가 안되고 쌓임
   ~~5. 글 지워도 디폴트 이미지는 안사라지도록~~
   ~~1. 검색에서 ' 입력시 오류 해결~~
 
@@ -282,3 +279,20 @@ c.Query(query)
 
 ~~5. 글 지워도 디폴트 이미지는 안사라지도록~~
 ~~1. 검색에서 ' 입력시 오류 해결~~ -> ' 를 empty로 바꿔버렸음. 
+
+
+https://www.geeksforgeeks.org/how-to-build-and-install-go-program/
+
+<포트 kill>
+netstat -lntp
+kill -9 ****
+
+go build
+./{바이너리파일명}
+
+
+sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+<80 -> 8080 포워딩>
+
+nohup ./{바이너리파일명} &
+<웹서버를 백그라운드에서 실행>

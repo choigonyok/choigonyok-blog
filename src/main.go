@@ -72,7 +72,7 @@ type Timecheck struct {
 
 // 게시판 전체를 합친 데이터를 DB_DATA structure에 묶어서 리턴
 func whole_cate(data Visit) Retrun_visit {
-	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
+	db, err := sql.Open("mysql", "choigonyok:@@@@@/blog")
 	if err != nil {
 		log.Fatalln("DB IS NOT CONNECTED")
 	}
@@ -81,7 +81,7 @@ func whole_cate(data Visit) Retrun_visit {
 	for i := 0; i < 6; i++ {
 		temp := DB_DATA{}
 		if data.Data[i].PID != 0 {
-			query := "SELECT title, body, imagepath from projects where pid =" + strconv.Itoa(data.Data[i].PID)
+			query := "SELECT title, body, imagepath from Projects where pid =" + strconv.Itoa(data.Data[i].PID)
 			r, err := db.Query((query))
 			if err != nil {
 				log.Fatalln("QUERY ERROR occured :", err)
@@ -92,7 +92,7 @@ func whole_cate(data Visit) Retrun_visit {
 				temp.Id = data.Data[i].PID
 			}
 		} else if data.Data[i].SID != 0 {
-			query := "SELECT title, body, imagepath from study where sid =" + strconv.Itoa(data.Data[i].SID)
+			query := "SELECT title, body, imagepath from Study where sid =" + strconv.Itoa(data.Data[i].SID)
 			r, err := db.Query((query))
 			if err != nil {
 				log.Fatalln("QUERY ERROR occured :", err)
@@ -103,7 +103,7 @@ func whole_cate(data Visit) Retrun_visit {
 				temp.Id = data.Data[i].SID
 			}
 		} else {
-			query := "SELECT title, body, imagepath from review where rid =" + strconv.Itoa(data.Data[i].RID)
+			query := "SELECT title, body, imagepath from Review where rid =" + strconv.Itoa(data.Data[i].RID)
 			r, err := db.Query((query))
 			if err != nil {
 				log.Fatalln("QUERY ERROR occured :", err)
@@ -123,11 +123,6 @@ func whole_cate(data Visit) Retrun_visit {
 func main() {
 	totalnum := 0
 	visitnum := 0
-	// fmt.Println(time.Now().Format("15:04:05"))
-	// t, err := time.Parse("15:04:05","08:37:00")
-	// if err != nil {
-	// 	log.Fatalln("TIME CONVERT ERROR occured :",err)
-	// } TEST
 	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
 	if err != nil {
 		log.Fatalln("DB IS NOT CONNECTED")
@@ -135,21 +130,25 @@ func main() {
 	defer db.Close()
 
 	eg := gin.Default()
-	eg.LoadHTMLGlob("./templates/**/*.html")
-	eg.Static("/assets", "./assets")
+	eg.LoadHTMLGlob("./../templates/**/*.html")
+	eg.Static("/assets", "./../assets")
 
 	// default homepage + 아래에 최근 게시물 6개 표시
 	eg.GET("/", func(c *gin.Context) {
 		_, err := c.Cookie("visit")
 		if err == http.ErrNoCookie {
-			c.SetCookie("visit", "OK", 0, "", "", false, false)
+			c.SetCookie("visit", "OK",3600 , "", "", false, false)
 			visitnum += 1
 		}
-		visitnum++
-		if time.Now().Format("15:04:05") == "00:00:00" {
-			totalnum += visitnum
-			visitnum = 0
+		go func (){
+			for(true){
+			if time.Now().Format("15:04:05") == "00:00:00" {
+				totalnum += visitnum
+				visitnum = 0
+				time.Sleep(time.Second*2)
+			}
 		}
+		}()
 
 		query := "SELECT COALESCE(p_id, '0'), COALESCE(s_id, '0'), COALESCE(r_id, '0') from whole order by id desc"
 		r, err := db.Query(query)
@@ -195,10 +194,6 @@ func main() {
 		c.HTML(http.StatusOK, "project1.html", nil)
 	})
 
-	eg.GET("/elements", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "elements.html", nil)
-	})
-
 	// DB에서 데이터 가져와서 게시판 보여주기
 	eg.GET("/postlist", func(c *gin.Context) {
 		listname := c.Query("listname")
@@ -233,7 +228,7 @@ func main() {
 		if err != nil {
 			imagename = "A5CC2571-3CEE-490B-A0FD-B7F1B0F4A642_4_5005_c.jpeg"
 		} else {
-			c.SaveUploadedFile(image, "./assets/images/"+image.Filename) // 여기 다시 공부
+			c.SaveUploadedFile(image, "./../assets/images/"+image.Filename) // 여기 다시 공부
 			imagename = image.Filename
 		}
 		
@@ -259,7 +254,7 @@ func main() {
 			http.Error(c.Writer, "THERE IS EMPTY BOX", http.StatusBadRequest)
 		}
 		if already != "" { // 원래 있던 게시글의 수정 내용을 저장
-			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `", imagepath = "/assets/images/` + imagename + `" where ` + id + ` = ` + already
+			query := "UPDATE " + cate + ` set title = "` + title + `" , body = "` + body + `", imagepath = "./../assets/images/` + imagename + `" where ` + id + ` = ` + already
 			_, err := db.Query(query)
 			if err != nil {
 				log.Fatalln("DB Update failed ERROR :", err)
@@ -278,7 +273,7 @@ func main() {
 				r.Scan(&idnum)
 			}
 			// 카테고리에 따라 맞는 DB table에 저장
-			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format(time.DateTime)) + `","/assets/images/` + imagename + `")`
+			query = "INSERT INTO " + cate + ` values ( ` + strconv.Itoa(idnum+1) + `,"` + title + `","` + body + `","` + string(time.Now().Format("2006-01-02 15:04:05")) + `","./../assets/images/` + imagename + `")`
 			db.Query(query)
 
 			// whole table의 다음 저장할 id num 찾기
@@ -437,7 +432,7 @@ func main() {
 				r.Scan(&imagepath)
 			}
 			// default image 이면 지우지 않도록
-			if imagepath != "./assets/images/ACAC4F47-2E85-412C-98F0-E3750922E1D9_4_5005_c.jpeg"{
+			if imagepath != "./../assets/images/ACAC4F47-2E85-412C-98F0-E3750922E1D9_4_5005_c.jpeg"{
 				os.Remove("." + imagepath)
 			}
 
@@ -480,8 +475,8 @@ func main() {
 				var imagepath string
 				row.Scan(&data.Id, &data.Title, &data.Body, &data.Written_time, &imagepath)
 				data.Category = cate
-				if strings.Contains(imagepath, "/assets"){
-					_, imagepath, _ = strings.Cut(imagepath, "/assets/images/")
+				if strings.Contains(imagepath, "./../assets"){
+					_, imagepath, _ = strings.Cut(imagepath, "./../assets/images/")
 				}
 				data.Imagepath = imagepath
 			}
@@ -495,7 +490,7 @@ func main() {
 		str := c.Request.FormValue("Find")
 		str = strings.ReplaceAll(str, `'`, "")
 		data := []DB_DATA{}
-		query := "select id, pid, title, body, datetime, imagepath from whole join projects on whole.p_id = projects.pid where body like '%" + str + "%' order by id desc"
+		query := "select id, pid, title, body, datetime, imagepath from whole join Projects on whole.p_id = Projects.pid where body like '%" + str + "%' order by id desc"
 		r, err := db.Query(query)
 		if err != nil {
 			log.Fatalln("DB Connecting ERROR occured :", err)
@@ -507,7 +502,7 @@ func main() {
 			data = append(data, temp)
 		}
 
-		query = "select id, sid, title, body, datetime, imagepath from whole join Study on whole.s_id = study.sid where body like '%" + str + "%' order by id desc"
+		query = "select id, sid, title, body, datetime, imagepath from whole join Study on whole.s_id = Study.sid where body like '%" + str + "%' order by id desc"
 		r, err = db.Query(query)
 		if err != nil {
 			log.Fatalln("DB Connecting ERROR occured :", err)
@@ -519,7 +514,7 @@ func main() {
 			data = append(data, temp)
 		}
 
-		query = "select id, rid, title, body, datetime, imagepath from whole join Review on whole.r_id = review.rid where body like '%" + str + "%' order by id desc"
+		query = "select id, rid, title, body, datetime, imagepath from whole join Review on whole.r_id = Review.rid where body like '%" + str + "%' order by id desc"
 		r, err = db.Query(query)
 		if err != nil {
 			log.Fatalln("DB Connecting ERROR occured :", err)
