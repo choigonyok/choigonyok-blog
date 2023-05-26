@@ -72,7 +72,7 @@ type Timecheck struct {
 
 // 게시판 전체를 합친 데이터를 DB_DATA structure에 묶어서 리턴
 func whole_cate(data Visit) Retrun_visit {
-	db, err := sql.Open("mysql", "choigonyok:@@@@@/blog")
+	db, err := sql.Open("mysql", "choigonyok:@/blog")// Change When Deploy
 	if err != nil {
 		log.Fatalln("DB IS NOT CONNECTED")
 	}
@@ -123,7 +123,7 @@ func whole_cate(data Visit) Retrun_visit {
 func main() {
 	totalnum := 0
 	visitnum := 0
-	db, err := sql.Open("mysql", "root:andromeda0085@/blog")
+	db, err := sql.Open("mysql", "choigonyok:@/blog") // Change When Deploy
 	if err != nil {
 		log.Fatalln("DB IS NOT CONNECTED")
 	}
@@ -435,11 +435,21 @@ func main() {
 			if imagepath != "./../assets/images/ACAC4F47-2E85-412C-98F0-E3750922E1D9_4_5005_c.jpeg"{
 				os.Remove("." + imagepath)
 			}
-
-			query = "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 DB에서 지우기
+			col := ""
+			switch id {
+			case "pid" : col = "p_id"
+			case "sid" : col = "s_id"
+			case "rid" : col = "r_id"
+			}
+			query = "DELETE from whole where " + col + " = " + index // 해당 레코드 외래키 테이블에서 지우기 (참조무결성 원칙)
 			_, err = db.Query(query)
 			if err != nil {
-				log.Fatalln("Query has ERROR :", err)
+				log.Fatalln("DELETE in Whole Table ERROR :", err)
+			}
+			query = "DELETE from " + cate + " where " + id + " = " + index // 해당 레코드 기본키 테이블에서 지우기
+			_, err = db.Query(query)
+			if err != nil {
+				log.Fatalln("DELETE in Cate Table ERROR :", err)
 			}
 
 			c.Redirect(http.StatusSeeOther, "/postlist?listname="+cate)
