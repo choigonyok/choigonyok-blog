@@ -137,7 +137,7 @@ func main() {
 	eg.GET("/", func(c *gin.Context) {
 		_, err := c.Cookie("visit")
 		if err == http.ErrNoCookie {
-			c.SetCookie("visit", "OK",3600 , "", "", false, false)
+			c.SetCookie("visit", "OK", 3600 , "", "", false, false)
 			visitnum += 1
 		}
 		go func (){
